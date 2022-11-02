@@ -147,6 +147,21 @@ Or Simply reading:
    </html>
    """
 
+
+Rename file between s3 path or to/from file system
+
+.. code:: python
+
+   >>> s3_path = S3Path('/pypi-proxy/botocore/index.html').rename("/tmp/test.html")
+   >>> local_index_path = s3_path.rename("/tmp/test.html")
+   >>> local_index_path
+   PosixPath("/tmp/test.html")
+   >>> local_index_path.exists()
+   True
+   >>> s3_path.exists()
+   False
+
+
 Requirements:
 =============
 
