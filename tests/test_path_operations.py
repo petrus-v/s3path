@@ -680,3 +680,38 @@ def test_instantiate_S3Path_using_PathFactory():
     assert s3_path.drive == ""
     assert s3_path.as_uri() == s3_uri
     assert str(s3_path) == "/bucket/directory/file.csv"
+
+def test_copy_s3_to_fs(pathlib_monkey_patch, s3_mock):
+    s3 = boto3.resource('s3')
+    s3.create_bucket(Bucket='test-bucket')
+    content = "# Copying file from S3 to FS"
+    object_summary = s3.ObjectSummary('test-bucket', 'docs/README.md')
+    object_summary.put(Body=content)
+    s3_source = S3Path('/test-bucket/docs/README.md')
+    assert s3_source.is_file()
+    assert s3_source.exists()
+    with TemporaryDirectory() as tmp_dir:
+        local_destination = Path(tmp_dir) / "README.md"
+        s3_source.copy(local_destination)
+        assert local_destination.exists()
+        assert local_destination.is_file()
+    assert s3_source.is_file()
+    assert s3_source.exists()
+
+def test_copy_s3_to_s3(pathlib_monkey_patch, s3_mock):
+    s3 = boto3.resource('s3')
+    s3.create_bucket(Bucket='test-bucket')
+    content = "# Moving file from S3 to FS"
+    object_summary = s3.ObjectSummary('test-bucket', 'docs/README.md')
+    object_summary.put(Body=content)
+    s3_source = S3Path('/test-bucket/docs/README.md')
+    assert s3_source.is_file()
+    assert s3_source.exists()
+    with TemporaryDirectory() as tmp_dir:
+        s3_destination = s3_source.parent / "README2.md"
+        with pytest.raises(NotImplementedError):
+            s3_source.copy(s3_destination)
+    #     assert s3_destination.exists()
+    #     assert s3_destination.is_file()
+    # assert s3_source.is_file()
+    # assert s3_source.exists()

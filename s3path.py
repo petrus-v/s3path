@@ -836,6 +836,22 @@ class S3Path(_PathNotSupportedMixin, Path, PureS3Path):
         source.unlink()
         return self
 
+    def copy(self, target):
+        self._absolute_path_validation()
+        if isinstance(target, str):
+            target = PathFactory(target) 
+        if not isinstance(target, type(self)):
+            return self._copy_to_fs(target)
+        target._absolute_path_validation()
+        raise NotImplementedError("Copying S3 to S3 is not supported")
+    
+    def _copy_to_fs(self, target):
+        self._accessor.get(self, target)
+        if not target.exists():
+            raise Exception(
+                "Something goes wrong while copying S3 file from %s to %s " % (self, target)
+            )
+
     def replace(self, target):
         """
         Renames this Bucket / key prefix / key to the given target.
