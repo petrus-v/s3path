@@ -40,6 +40,7 @@ def test_stat(s3_mock):
     assert stat == StatResult(
         size=object_summary.size,
         last_modified=object_summary.last_modified,
+        e_tag="eb733a00c0c9d336e65691a37ab54293",
     )
 
     with NamedTemporaryFile() as local_file:
@@ -53,6 +54,7 @@ def test_stat(s3_mock):
         assert s3_stat.st_size == local_stat.st_size == s3_stat.size
         assert s3_stat.last_modified.timestamp() == s3_stat.st_mtime
         assert s3_stat.st_mtime < local_stat.st_mtime
+        assert s3_stat.etag == "eb733a00c0c9d336e65691a37ab54293"
 
     with pytest.raises(UnsupportedOperation):
         path.stat().st_atime
