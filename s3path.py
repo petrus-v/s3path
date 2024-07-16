@@ -190,6 +190,7 @@ class _S3Accessor(_Accessor):
             size=object_summary.size,
             last_modified=object_summary.last_modified,
             e_tag=object_summary.e_tag.strip('"'),
+            storage_class=object_summary.storage_class,
         )
 
     def is_dir(self, path):
@@ -973,7 +974,7 @@ class S3Path(_PathNotSupportedMixin, Path, PureS3Path):
         if template is None:
             self._accessor = _s3_accessor
 
-class StatResult(namedtuple('BaseStatResult', 'size, last_modified, e_tag')):
+class StatResult(namedtuple('BaseStatResult', 'size, last_modified, e_tag, storage_class')):
     """
     Base of os.stat_result but with boto3 s3 features
     """
@@ -996,11 +997,15 @@ class StatResult(namedtuple('BaseStatResult', 'size, last_modified, e_tag')):
         """Return s3 etag"""
         return self.e_tag
 
+    @property
+    def st_storage_class(self):
+        return self.storage_class
+
 class S3DirEntry:
     def __init__(self, name, is_dir, size=None, last_modified=None):
         self.name = name
         self._is_dir = is_dir
-        self._stat = StatResult(size=size, last_modified=last_modified, e_tag=None)
+        self._stat = StatResult(size=size, last_modified=last_modified, e_tag=None, storage_class=None)
 
     def __repr__(self):
         return '{}(name={}, is_dir={}, stat={})'.format(

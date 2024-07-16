@@ -41,6 +41,7 @@ def test_stat(s3_mock):
         size=object_summary.size,
         last_modified=object_summary.last_modified,
         e_tag="eb733a00c0c9d336e65691a37ab54293",
+        storage_class=None,
     )
 
     with NamedTemporaryFile() as local_file:
