@@ -391,6 +391,11 @@ class _S3Accessor(_Accessor):
         except ClientError:
             raise OSError("/{0}/{1}".format(bucket_name, key_name))
 
+    def restore(self, path, days=2):
+        resource, config = self.configuration_map.get_configuration(path)
+        s3_object = resource.Bucket(path.bucket).Object(path.key)
+        s3_object.restore_object(RestoreRequest={"Days": days})
+
     def _update_kwargs_with_config(self, boto3_method, config, kwargs=None):
         kwargs = kwargs or {}
         if config is not None:
@@ -968,6 +973,13 @@ class S3Path(_PathNotSupportedMixin, Path, PureS3Path):
         AWS S3 Service doesn't have fifo feature, There for this method will always return False
         """
         return False
+
+    def restore(self, days=2):
+        """
+        Restore file from GLACIER storage class to STANDARD for given days
+        """
+        self._accessor.restore(self, days=days)
+        
 
     def _init(self, template=None):
         super()._init(template)

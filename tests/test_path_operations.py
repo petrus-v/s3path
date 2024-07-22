@@ -718,3 +718,11 @@ def test_copy_s3_to_s3(pathlib_monkey_patch, s3_mock):
     #     assert s3_destination.is_file()
     # assert s3_source.is_file()
     # assert s3_source.exists()
+
+def test_restore(s3_mock):
+    s3 = boto3.resource('s3')
+    s3.create_bucket(Bucket='test-bucket')
+    object_summary = s3.ObjectSummary('test-bucket', 'temp_key')
+    object_summary.put(Body=b'test data', StorageClass="GLACIER")
+    path = S3Path('/test-bucket/temp_key')
+    path.restore(days=2)
